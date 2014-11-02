@@ -4211,6 +4211,29 @@ class OrderOfIncludesTest(CpplintTestBase):
                                       'foo/other/public/foop.h',
                                       False))
 
+  def testClassifyExtLibInclude(self):
+    file_info = cpplint.FileInfo
+    classify_include = cpplint._ClassifyInclude
+    cpplint._system_wide_external_libs = True
+    cpplint._external_lib_prefixes = ['glog']
+    self.assertEqual(cpplint._LIBS_HEADER,
+                     classify_include(file_info('foo/foo.cc'),
+                                      'glog/glog.h',
+                                      True))
+    self.assertEqual(cpplint._OTHER_HEADER,
+                     classify_include(file_info('foo/foo.cc'),
+                                      'glog/glog.h',
+                                      False))
+    cpplint._system_wide_external_libs = False
+    self.assertEqual(cpplint._LIBS_HEADER,
+                     classify_include(file_info('foo/foo.cc'),
+                                      'glog/glog.h',
+                                      False))
+    self.assertEqual(cpplint._C_SYS_HEADER,
+                     classify_include(file_info('foo/foo.cc'),
+                                      'glog/glog.h',
+                                      True))
+
   def testTryDropCommonSuffixes(self):
     self.assertEqual('foo/foo', cpplint._DropCommonSuffixes('foo/foo-inl.h'))
     self.assertEqual('foo/bar/foo',
@@ -4257,7 +4280,7 @@ class OrderOfIncludesTest(CpplintTestBase):
         'foo/foo.cc',
         Format(['<string>', '<stdio.h>']),
         'Found C system header after C++ system header.'
-        ' Should be: foo.h, c system, c++ system, other.'
+        ' Should be: foo.h, c system, c++ system, libs, other.'
         '  [build/include_order] [4]')
     self.TestLanguageRulesCheck(
         'foo/foo.cc',
@@ -4330,7 +4353,7 @@ class OrderOfIncludesTest(CpplintTestBase):
                  '#include "base/port.h"\n',
                  '#include <initializer_list>\n']),
         ('Found C++ system header after other header. '
-         'Should be: a.h, c system, c++ system, other.  '
+         'Should be: a.h, c system, c++ system, libs, other.  '
          '[build/include_order] [4]'))
     self.TestLanguageRulesCheck(
         'a/a.cc',
@@ -4348,7 +4371,7 @@ class OrderOfIncludesTest(CpplintTestBase):
                  '#include <initializer_list>\n',
                  '#endif  // LANG_CXX11\n']),
         ('Found C++ system header after other header. '
-         'Should be: a.h, c system, c++ system, other.  '
+         'Should be: a.h, c system, c++ system, libs, other.  '
          '[build/include_order] [4]'))
 
     # Third party headers are exempt from order checks

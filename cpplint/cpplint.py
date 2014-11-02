@@ -464,6 +464,7 @@ _CPP_SYS_HEADER = 2
 _LIKELY_MY_HEADER = 3
 _POSSIBLE_MY_HEADER = 4
 _OTHER_HEADER = 5
+_LIBS_HEADER = 6
 
 # These constants define the current inline assembly state
 _NO_ASM = 0       # Outside of inline assembly block
@@ -490,6 +491,12 @@ _root = None
 # The allowed line length of files.
 # This is set by --linelength flag.
 _line_length = 80
+
+# External library behavior
+# Whether external libraries are installed system-wide
+_system_wide_external_libs = False
+# List of prefixes that should be treated as external libraries
+_external_lib_prefixes = []
 
 # The allowed extensions for file names
 # This is set by --extensions flag.
@@ -601,7 +608,8 @@ class _IncludeState(object):
   _MY_H_SECTION = 1
   _C_SECTION = 2
   _CPP_SECTION = 3
-  _OTHER_H_SECTION = 4
+  _LIBS_SECTION = 4
+  _OTHER_H_SECTION = 5
 
   _TYPE_NAMES = {
       _C_SYS_HEADER: 'C system header',
@@ -609,6 +617,7 @@ class _IncludeState(object):
       _LIKELY_MY_HEADER: 'header this file implements',
       _POSSIBLE_MY_HEADER: 'header this file may implement',
       _OTHER_HEADER: 'other header',
+      _LIBS_HEADER: 'external lib header',
       }
   _SECTION_NAMES = {
       _INITIAL_SECTION: "... nothing. (This can't be an error.)",
@@ -616,6 +625,7 @@ class _IncludeState(object):
       _C_SECTION: 'C system header',
       _CPP_SECTION: 'C++ system header',
       _OTHER_H_SECTION: 'other header',
+      _LIBS_SECTION: 'external library header',
       }
 
   def __init__(self):
@@ -738,6 +748,12 @@ class _IncludeState(object):
         # This will always be the fallback because we're not sure
         # enough that the header is associated with this file.
         self._section = self._OTHER_H_SECTION
+    elif header_type == _LIBS_HEADER:
+      if self._section <= self._LIBS_SECTION:
+        self._section = self._LIBS_SECTION
+      else:
+        self._last_header = ''
+        return error_message
     else:
       assert header_type == _OTHER_HEADER
       self._section = self._OTHER_H_SECTION
@@ -4410,12 +4426,18 @@ def _ClassifyInclude(fileinfo, include, is_system):
   # This is a list of all standard c++ header files, except
   # those already checked for above.
   is_cpp_h = include in _CPP_HEADERS
+  include_base_dir = include.split(os.path.sep)[0]
+  is_lib_h = include_base_dir in _external_lib_prefixes
 
   if is_system:
     if is_cpp_h:
       return _CPP_SYS_HEADER
+    elif _system_wide_external_libs and is_lib_h:
+      return _LIBS_HEADER
     else:
       return _C_SYS_HEADER
+  elif not _system_wide_external_libs and is_lib_h:
+    return _LIBS_HEADER
 
   # If the target file and the include we're checking share a
   # basename when we drop common extensions, and the include
@@ -4502,7 +4524,7 @@ def CheckIncludeLine(filename, clean_lines, linenum, include_state, error):
           _ClassifyInclude(fileinfo, include, is_system))
       if error_message:
         error(filename, linenum, 'build/include_order', 4,
-              '%s. Should be: %s.h, c system, c++ system, other.' %
+              '%s. Should be: %s.h, c system, c++ system, libs, other.' %
               (error_message, fileinfo.BaseName()))
       canonical_include = include_state.CanonicalizeAlphabeticalOrder(include)
       if not include_state.IsInAlphabeticalOrder(
@@ -5924,6 +5946,13 @@ def ProcessConfigOverrides(filename):
                 _line_length = int(val)
             except ValueError:
                 sys.stderr.write('Line length must be numeric.')
+          elif name == 'system_wide_external_libs':
+            global _system_wide_external_libs
+            _system_wide_external_libs = val.lower() in ('true', 'yes',
+                                                         '1', 'on')
+          elif name == 'external_lib_prefixes':
+            global _external_lib_prefixes
+            _external_lib_prefixes = [pref.strip() for pref in val.split(',')]
           else:
             sys.stderr.write(
                 'Invalid configuration option (%s) in file %s\n' %
