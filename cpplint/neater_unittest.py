@@ -1,6 +1,6 @@
 #!/usr/bin/python
 # -*- coding: utf-8; -*-
-# Copyright (c) 2014 The Ostrich. All rights reserved.
+# Copyright (c) 2014 The Ostrich | by Itamar O
 # pylint: disable=protected-access,too-many-public-methods,too-few-public-methods,bad-indentation,bad-continuation
 
 """Unit tests for neater.py."""

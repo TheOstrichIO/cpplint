@@ -1,4 +1,5 @@
 #!/usr/bin/python
+# -*- coding: utf-8; -*-
 # Copyright (c) 2014 The Ostrich | by Itamar O
 # pylint: disable=protected-access,bad-indentation,too-few-public-methods,global-statement
 
