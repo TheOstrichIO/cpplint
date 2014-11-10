@@ -3,15 +3,15 @@
 # Copyright (c) 2014 The Ostrich | by Itamar O
 # pylint: disable=protected-access,too-many-public-methods,too-few-public-methods,bad-indentation,bad-continuation
 
-"""Unit tests for neater.py."""
+"""Unit tests for nitpick.py."""
 
 import os
 import unittest
 
-import neater
+import nitpick
 
 class IncludeSorterTest(unittest.TestCase):
-  """Test include-sorter neater module"""
+  """Test include-sorter nitpick module"""
 
   def setUp(self):
     """Mock stuff for tests"""
@@ -28,10 +28,10 @@ class IncludeSorterTest(unittest.TestCase):
         """Write string to mock STDERR."""
         self.buffer.append(message)
     self._stderr = MyStdErr()
-    neater.is_project_file = mock_is_proj_file
-    neater.sys.stderr = self._stderr
-    neater.cpplint._system_wide_external_libs = True
-    neater.cpplint._external_lib_prefixes = [u'glog', u'gflags']
+    nitpick.is_project_file = mock_is_proj_file
+    nitpick.sys.stderr = self._stderr
+    nitpick.cpplint._system_wide_external_libs = True
+    nitpick.cpplint._external_lib_prefixes = [u'glog', u'gflags']
 
   def test_nop_sort(self):
     """Test that already sorted includes returned as it."""
@@ -51,7 +51,7 @@ class IncludeSorterTest(unittest.TestCase):
     ]
     self.assertListEqual(
       src_lines,
-      neater.sort_includes('foo/bar.cc', src_lines),
+      nitpick.sort_includes('foo/bar.cc', src_lines),
     )
 
   def test_simple_sort(self):
@@ -83,7 +83,7 @@ class IncludeSorterTest(unittest.TestCase):
     ]
     self.assertListEqual(
       exp_lines,
-      neater.sort_includes('foo/bar.cc', src_lines),
+      nitpick.sort_includes('foo/bar.cc', src_lines),
     )
 
   def test_ext_lib_sort(self):
@@ -116,7 +116,7 @@ class IncludeSorterTest(unittest.TestCase):
     ]
     self.assertListEqual(
       exp_lines,
-      neater.sort_includes('foo/bar.cc', src_lines),
+      nitpick.sort_includes('foo/bar.cc', src_lines),
     )
 
   def test_preserve_poststr(self):
@@ -137,7 +137,7 @@ class IncludeSorterTest(unittest.TestCase):
     ]
     self.assertListEqual(
       exp_lines,
-      neater.sort_includes('foo/bar.cc', src_lines),
+      nitpick.sort_includes('foo/bar.cc', src_lines),
     )
 
   def test_surrounding_lines(self):
@@ -171,7 +171,7 @@ class IncludeSorterTest(unittest.TestCase):
     ]
     self.assertListEqual(
       exp_lines,
-      neater.sort_includes('foo/bar.cc', src_lines),
+      nitpick.sort_includes('foo/bar.cc', src_lines),
     )
 
   def test_consistent_duplicate(self):
@@ -195,7 +195,7 @@ class IncludeSorterTest(unittest.TestCase):
     ]
     self.assertListEqual(
       exp_lines,
-      neater.sort_includes('foo/bar.cc', src_lines),
+      nitpick.sort_includes('foo/bar.cc', src_lines),
     )
     self.assertListEqual(
       [u'WARNING: "algorithm" included more than once (consistently) in '
@@ -214,7 +214,7 @@ class IncludeSorterTest(unittest.TestCase):
       u'',
     ]
     with self.assertRaises(RuntimeError):
-      neater.sort_includes('foo/bar.cc', src_lines)
+      nitpick.sort_includes('foo/bar.cc', src_lines)
     self.assertListEqual(
       [u'ERROR: "algorithm" included more than once (inconsistently) in '
         '"foo/bar.cc:4": #include <algorithm>\n'],
@@ -241,7 +241,7 @@ class IncludeSorterTest(unittest.TestCase):
     ]
     self.assertListEqual(
       exp_lines,
-      neater.sort_includes('foo/bar.cc', src_lines),
+      nitpick.sort_includes('foo/bar.cc', src_lines),
     )
     self.assertListEqual(
       [u'WARNING: "common/util.h" looks like a project-file, but is included '
