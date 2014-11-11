@@ -34,6 +34,7 @@ _SECTIONS_ORDER = [
     (cpplint._OTHER_HEADER,),
 ]
 _QUIET = False
+_ROOT = None
 
 def stringify(message, *args):
   """Return formatted message by applying args, if any."""
@@ -83,15 +84,21 @@ class HFile(object):
 
 def is_own_header(src_file, include):
   """Return True if `include` is the 'self'-header-file for `src_file`."""
-  inc_pref = os.path.splitext(include)[0]
-  src_pref = os.path.splitext(src_file)[0]
+  if _ROOT:
+    src_file = os.path.relpath(src_file, _ROOT)
+  inc_pref = os.path.normpath(os.path.splitext(include)[0])
+  src_pref = os.path.normpath(os.path.splitext(src_file)[0])
   if src_pref.endswith('_test'):
     src_pref = src_pref[:-5]
   return inc_pref == src_pref
 
 def is_project_file(file_path):
   """Return True if `file_path` belongs to the project."""
+  file_path = os.path.normpath(file_path)
   file_dir = file_path.split(os.path.sep)[0]
+  if _ROOT:
+    file_path = os.path.join(_ROOT, file_path)
+    file_dir = os.path.join(_ROOT, file_dir)
   return os.path.isfile(file_path) or os.path.isdir(file_dir)
 
 def sort_includes_batch(filename, includes):
@@ -187,6 +194,8 @@ def stylify_file(args, filepath):
     filename = filepath
     with codecs.open(filepath, 'r', 'utf8', 'replace') as src_f:
       old_content = src_f.read()
+  if _ROOT:
+    cpplint._root = _ROOT
   cpplint.ProcessConfigOverrides(filename)
   lines = old_content.split(u'\n')
   new_lines = stylify_lines(args, filename, lines)
@@ -231,25 +240,28 @@ def main():
   """Run nitpick command on input(s)."""
   parser = argparse.ArgumentParser()
   subparsers = parser.add_subparsers()
-  styler_parser = subparsers.add_parser('style',
-                                        help=u'Stylify C++ source code')
-  styler_parser.add_argument('--no_edit', action='store_true',
-                             help=u'Don\'t overwrite source file with '
-                             'stylified output')
-  styler_parser.add_argument('--show_diff', action='store_true',
-                             help=u'Print diffs between input file and '
-                             'stylified file to STDERR')
-  styler_parser.add_argument('--quiet', action='store_true',
-                             help=u'Don\'t print progress '
-                             '(only warnings and errors)')
+  style_parser = subparsers.add_parser('style',
+                                       help=u'Stylify C++ source code')
+  style_parser.add_argument('--no_edit', action='store_true',
+                            help=u'Don\'t overwrite source file with '
+                            'stylified output')
+  style_parser.add_argument('--show_diff', action='store_true',
+                            help=u'Print diffs between input file and '
+                            'stylified file to STDERR')
+  style_parser.add_argument('--quiet', action='store_true',
+                            help=u'Don\'t print progress '
+                            '(only warnings and errors)')
   modules_help_str = u'\n'.join([u'%s: %s' % (mod, desc) for mod, desc in
                                  _STYLE_MODULES_DICT.iteritems()])
-  styler_parser.add_argument('-m', '--modules', action='append', metavar='MOD',
-                             help=modules_help_str)
-  styler_parser.add_argument('--filename',
-                             help=u'When reading source code from STDIN, spec'
-                             'ify the filename of the processed source code')
-  styler_parser.set_defaults(func=stylify)
+  style_parser.add_argument('-m', '--modules', action='append', metavar='MOD',
+                            help=modules_help_str)
+  style_parser.add_argument('--filename',
+                            help=u'When reading source code from STDIN, speci'
+                            'fy the filename of the processed source code')
+  style_parser.add_argument('--root',
+                            help=u'Path to project root directory, if '
+                            'different from current directory')
+  style_parser.set_defaults(func=stylify)
   # Change stderr to write with replacement characters so we don't die
   # if we try to print something containing non-ASCII characters.
   sys.stderr = codecs.StreamReaderWriter(sys.stderr,
@@ -260,6 +272,8 @@ def main():
   args, files = parser.parse_known_args()
   global _QUIET
   _QUIET = args.quiet
+  global _ROOT
+  _ROOT = args.root
   args.func(args, files)
 
 if __name__ == '__main__':
