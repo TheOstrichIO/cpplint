@@ -1,3 +1,17 @@
+Usage example:
+
+This will style a single specified file:
+./nitpick.py style <path_to_file>
+
+This will style all files inside a directory:
+./nitpick.py style $(find <directory> -maxdepth 1 -name '*.<file_extension>')
+
+This will style all files inside a directory and all it's subdirectories recursively:
+./nitpick.py style $(find <directory> -name '*.<file_extension>')
+
+Use only one specific module
+./nitpick.py style -m <module_name> <path_to_file>
+
 This is automated checker to make sure a C++ file follows Google's C++ style
 guide (http://google-styleguide.googlecode.com/svn/trunk/cppguide.xml). As it
 heavily relies on regular expressions, cpplint.py won't catch all violations of
