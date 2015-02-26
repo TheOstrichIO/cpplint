@@ -20,8 +20,10 @@ from cpplint import FileInfo
 from cpplint import _ClassifyInclude as classify_include
 
 _STYLE_MODULES_DICT = {
-    u'sort_includes': (u'Automatically divide includes into sections are sort '
+    u'sort_includes': (u'Automatically divide includes into sections and sort '
                        'them, according to Google C++ Style Guide'),
+    u'correct_spacing': (u'Add and/or remove spaces and tabs'
+                       ', according to Google C++ Style Guide'),
 }
 _STYLE_MODULES = frozenset(_STYLE_MODULES_DICT.keys())
 _RE_PATTERN_INCLUDE = re.compile(  # from cpplint + modifications
@@ -176,11 +178,84 @@ def sort_includes(filename, lines):
     warn(u'More than 1 batch of #include\'s in "%s"', filename)
   return new_lines
 
+def correct_spacing(a_line):
+  """
+  Used to find and correct spacing issues.
+  Bread and butter - actual work is done here.
+  It follows the guidelines of the cpplint.
+  """
+  # Used to search for:
+  # Tabs
+  # TODO: allow user to specify how many spaces in each tab
+  tabs = r'\t'
+  # Lines that end with whitespace.
+  endline_whitespace = r'(\s*$)'
+  # Commas and semicolons that aren't followed by a space
+  # or a line's end.
+  semicolon0 = r'(?<=[;,])(?!($|\s))'
+  # Spaces directly prior to a comma or a semicolon.
+  semicolon1 = r'(\s*)(?=[;,])'
+  # Curly braces directly followed by letters or
+  # directly preceded by a round bracket or a letter 
+  # e.g: }else{
+  # Both the first and second curly brace would match
+  curly_braces = r'(?<=[}])(?=\w)|(?<=[)\w])(?=[{])'
+  # Looks for '=', '<' and '>' directly by letters, numbers or quotes.
+  assignment_gt_lt = r'(?<=[\w\"\'])(?=[=<>])|(?<=[=<>])(?=[\w\"\'])'
+  # Looks for '==', '!=', '<=', '>=', '&&', '>>', '<<' and '||'
+  # that are next to anything other than whitespace or end of line
+  oper_wo_space_in = r'(?<!\s)(?=(==|!=|<=|>=|&&|>>|<<|\|\|))'
+  oper_wo_space_out = r'(?<=(==|!=|<=|>=|&&|>>|<<|\|\|))(?!$|\s)'
+  # ifs, fors, whiles & switches, followed directly by round brackets
+  loops_and_conds = r'(^|\W)(if|for|while|switch)(?=[(])'
+  # Looks for improperly spaced one line comments //
+  comments0 = r'(?<=[/]{2})(?=[\S])'
+  comments1 = r'(?<![ ])( ?)(?=[/]{2})'
+  # Yonatan asked for this (only one space after comment)
+  comments2 = r'(?<=[/]{2})(\s*)'
+  result = a_line
+  # Removing tabs
+  # Looks for tabs to replace them with two spaces
+  result = re.sub(tabs, r'  ', result)
+  # Removing spaces at the end of the line
+  result = re.sub(endline_whitespace, r'', result)
+  # Adding a space after semicolon within a line
+  # a;b => a; b
+  result = re.sub(semicolon0, r' ', result)
+  # Remove space before semicolon
+  # a ; => a;
+  result = re.sub(semicolon1, r'', result)
+  # Adding space between bracket and brace
+  # ){ => ) {
+  result = re.sub(curly_braces, r' ', result)
+  # Adding a space near assignment, gt and lt
+  # a=b => a = b
+  result = re.sub(assignment_gt_lt, r' ', result)
+  # Adding a space near opers
+  # a&&b => a && b
+  result = re.sub(oper_wo_space_in, r' ', result)
+  result = re.sub(oper_wo_space_out, r' ', result)
+  # Adding a space before conds & loops brackets
+  # if() => if ()
+  result = re.sub(loops_and_conds, r'\1\2 ', result)
+  # Adding space before a comments text
+  # //abc => // abc
+  result = re.sub(comments0, r' ', result)
+  # Adding two spaces between code and comments
+  # abc//def => abc //def
+  result = re.sub(comments1, r'  ', result)
+  # Replacing multiple spaces in the beginning of a comment with one
+  result = re.sub(comments2, r' ', result)
+  return result
+
+
 def stylify_lines(args, filename, lines):
   """Run stylify modules on `lines` and return styled lines."""
   for mod in args.modules:
     if u'sort_includes' == mod:
       lines = sort_includes(filename, lines)
+    if u'correct_spacing' == mod:
+      lines = map(correct_spacing, lines)
   return lines
 
 def stylify_file(args, filepath):
