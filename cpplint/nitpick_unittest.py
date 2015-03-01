@@ -370,6 +370,9 @@ class IncludeSorterTest(unittest.TestCase):
       self._stderr.buffer
     )
 
+class WhiteSpaceFixerTest(unittest.TestCase):
+  """Test correct-spacing nitpick module"""
+
   def test_replacing_tabs_with_two_spaces(self):
     """Test that tabs are removed"""
     src_lines = [
