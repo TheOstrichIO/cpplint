@@ -1,7 +1,7 @@
 #!/usr/bin/python
 # -*- coding: utf-8; -*-
 # Copyright (c) 2014 The Ostrich | by Itamar O
-# pylint: disable=protected-access,too-many-public-methods,too-few-public-methods,bad-indentation,bad-continuation
+# pylint: disable=protected-access,too-many-public-methods,too-few-public-methods,bad-indentation,bad-continuation,invalid-name
 
 """Unit tests for nitpick.py."""
 
@@ -368,6 +368,148 @@ class IncludeSorterTest(unittest.TestCase):
        u'WARNING: "algorithm" looks like a system-file, but is included with '
         '"" in "foo/bar.cc:2": #include "algorithm"\n'],
       self._stderr.buffer
+    )
+
+class WhiteSpaceFixerTest(unittest.TestCase):
+  """Test correct-spacing nitpick module"""
+
+  def test_replacing_tabs_with_two_spaces(self):
+    """Test that tabs are removed"""
+    src_lines = [
+      u'for	(int i = 100  ;	i < 0;	i++) { 	 	 '
+    ]
+    exp_lines = [
+      u'for  (int i = 100;  i < 0;  i++) {'
+    ]
+    self.assertListEqual(
+      exp_lines,
+      [nitpick.correct_spacing(line) for line in src_lines]
+    )
+
+  def test_whitespace_at_end_of_line_removal(self):
+    """Test that any whitespace in the end of the line is removed"""
+    src_lines = [
+      u'for (int i = 100  ; i < 0; i++) {     ',
+      u' some_line = value +  another value ;   			'
+    ]
+    exp_lines = [
+      u'for (int i = 100; i < 0; i++) {',
+      u' some_line = value +  another value;'
+    ]
+    self.assertListEqual(
+      exp_lines,
+      [nitpick.correct_spacing(line) for line in src_lines]
+    )
+
+  def test_spacing_semicolon_and_comma(self):
+    """Test that semicolon and comma spacing is corrected"""
+    src_lines = [
+      u'for(int i = 100  ;i < 0;i++) {',
+      u'int y = 100   ; '
+    ]
+    exp_lines = [
+      u'for (int i = 100; i < 0; i++) {',
+      u'int y = 100;'
+    ]
+    self.assertListEqual(
+      exp_lines,
+      [nitpick.correct_spacing(line) for line in src_lines]
+    )
+
+  def test_curly_brace_spacing_fixer(self):
+    """Test that curly braces are spaced correctly"""
+    src_lines = [
+      u'for(int i = 100  ;i < 0;i++){',
+      u'}else{'
+    ]
+    exp_lines = [
+      u'for (int i = 100; i < 0; i++) {',
+      u'} else {'
+    ]
+    self.assertListEqual(
+      exp_lines,
+      [nitpick.correct_spacing(line) for line in src_lines]
+    )
+
+  def test_spacing_with_assignment_and_gt_lt(self):
+    """Test spacing with =, < and >"""
+    src_lines = [
+      u'if (a<b || a>b || c< d || c >d) {',
+    ]
+    exp_lines = [
+      u'if (a < b || a > b || c < d || c > d) {',
+    ]
+    self.assertListEqual(
+      exp_lines,
+      [nitpick.correct_spacing(line) for line in src_lines]
+    )
+
+  def test_spacing_with_some_common_two_char_operators(self):
+    """Test spacing with operators like ==, !=, >=, << and such"""
+    src_lines = [
+      u'a = 1<<2',
+      u'if (a==b||c >=d&& bob!=mob)'
+      u'b = 256 >>4'
+    ]
+    exp_lines = [
+      u'a = 1 << 2',
+      u'if (a == b || c >= d && bob != mob)'
+      u'b = 256 >> 4'
+    ]
+    self.assertListEqual(
+      exp_lines,
+      [nitpick.correct_spacing(line) for line in src_lines]
+    )
+
+  def test_spacing_near_if_for_while_switch(self):
+    """Test spacing near conditions, loops and switches"""
+    src_lines = [
+      u'if(a) while(b) for(; i < 10; i++) switch(c)',
+    ]
+    exp_lines = [
+      u'if (a) while (b) for (; i < 10; i++) switch (c)',
+    ]
+    self.assertListEqual(
+      exp_lines,
+      [nitpick.correct_spacing(line) for line in src_lines]
+    )
+
+  def test_spacing_around_single_line_comments(self):
+    """Test spacing near single line comments (//)"""
+    src_lines = [
+      u'if (a)//we like a so lets do stuff',
+      u'while (b) //as long as there is b, there is hope',
+      u'some_var = other_var;  //other_var is a reference to some_var',
+      u'do_good_stuff(a, b);// possibly rename this function'
+      u'some_syntax_here //      too much spacing here'
+    ]
+    exp_lines = [
+      u'if (a)  // we like a so lets do stuff',
+      u'while (b)  // as long as there is b, there is hope',
+      u'some_var = other_var;  // other_var is a reference to some_var',
+      u'do_good_stuff(a, b);  // possibly rename this function'
+      u'some_syntax_here  // too much spacing here'
+    ]
+    self.assertListEqual(
+      exp_lines,
+      [nitpick.correct_spacing(line) for line in src_lines]
+    )
+
+  def test_no_space_around_factors(self):
+    """Test that multiple allowed styles are left unchanged."""
+    src_lines = [
+      u'v = w * x + y / z;  // Binary operators usually have spaces around',
+      u'v = w*x + y/z;      // it\'s okay to remove spaces around factors.',
+      u'v = w * (x + z);    // Parentheses should have no spaces inside them.',
+    ]
+    exp_lines = [
+      u'v = w * x + y / z;  // Binary operators usually have spaces around',
+      u'v = w*x + y/z;      // it\'s okay to remove spaces around factors.',
+      u'v = w * (x + z);    // Parentheses should have no spaces inside them.',
+    ]
+    self.assertListEqual(
+      exp_lines,
+      [nitpick.correct_spacing(line) for line in src_lines]
     )
 
 if __name__ == '__main__':
