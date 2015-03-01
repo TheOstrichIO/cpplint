@@ -3,18 +3,19 @@ from setuptools import setup
 
 setup(name='cpplint',
       version='0.0.5',
-      py_modules=['cpplint'],
+      py_modules=['cpplint', 'nitpick'],
       # generate platform specific start script
       entry_points={
         'console_scripts': [
-            'cpplint = cpplint:main'
+            'cpplint = cpplint:main',
+            'nitpick = nitpick:main',
         ]
       },
       install_requires=[],
       url="http://en.wikipedia.org/wiki/Cpplint",
-      download_url="https://github.com/tkruse/cpplint",
+      download_url="https://github.com/TheOstrichIO/cpplint",
       keywords=["lint", "python", "c++"],
-      maintainer = 'Thibault Kruse',
+      maintainer = 'Thibault Kruse, Itamar Ostricher',
       maintainer_email = 'see_github@nospam.com',
       classifiers=["Programming Language :: Python",
                    "Programming Language :: Python :: 2",
