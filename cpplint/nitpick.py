@@ -22,8 +22,8 @@ from cpplint import _ClassifyInclude as classify_include
 _STYLE_MODULES_DICT = {
     u'sort_includes': (u'Automatically divide includes into sections and sort '
                        'them, according to Google C++ Style Guide'),
-    u'correct_spacing': (u'Add and/or remove spaces and tabs'
-                       ', according to Google C++ Style Guide'),
+    u'correct_spacing': (u'Add and/or remove spaces and tabs, '
+                         'according to Google C++ Style Guide'),
 }
 _STYLE_MODULES = frozenset(_STYLE_MODULES_DICT.keys())
 _RE_PATTERN_INCLUDE = re.compile(  # from cpplint + modifications
@@ -179,8 +179,7 @@ def sort_includes(filename, lines):
   return new_lines
 
 def correct_spacing(a_line):
-  """
-  Used to find and correct spacing issues.
+  """Used to find and correct spacing issues.
   Bread and butter - actual work is done here.
   It follows the guidelines of the cpplint.
   """
@@ -196,7 +195,7 @@ def correct_spacing(a_line):
   # Spaces directly prior to a comma or a semicolon.
   semicolon1 = r'(\s*)(?=[;,])'
   # Curly braces directly followed by letters or
-  # directly preceded by a round bracket or a letter 
+  # directly preceded by a round bracket or a letter
   # e.g: }else{
   # Both the first and second curly brace would match
   curly_braces = r'(?<=[}])(?=\w)|(?<=[)\w])(?=[{])'
@@ -248,14 +247,13 @@ def correct_spacing(a_line):
   result = re.sub(comments2, r' ', result)
   return result
 
-
 def stylify_lines(args, filename, lines):
   """Run stylify modules on `lines` and return styled lines."""
   for mod in args.modules:
     if u'sort_includes' == mod:
       lines = sort_includes(filename, lines)
     if u'correct_spacing' == mod:
-      lines = map(correct_spacing, lines)
+      lines = [correct_spacing(line) for line in lines]
   return lines
 
 def stylify_file(args, filepath):

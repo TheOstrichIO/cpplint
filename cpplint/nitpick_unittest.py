@@ -1,7 +1,7 @@
 #!/usr/bin/python
 # -*- coding: utf-8; -*-
 # Copyright (c) 2014 The Ostrich | by Itamar O
-# pylint: disable=protected-access,too-many-public-methods,too-few-public-methods,bad-indentation,bad-continuation
+# pylint: disable=protected-access,too-many-public-methods,too-few-public-methods,bad-indentation,bad-continuation,invalid-name
 
 """Unit tests for nitpick.py."""
 
@@ -380,7 +380,7 @@ class IncludeSorterTest(unittest.TestCase):
     ]
     self.assertListEqual(
       exp_lines,
-      map(nitpick.correct_spacing, src_lines)
+      [nitpick.correct_spacing(line) for line in src_lines]
     )
 
   def test_whitespace_at_end_of_line_removal(self):
@@ -395,7 +395,7 @@ class IncludeSorterTest(unittest.TestCase):
     ]
     self.assertListEqual(
       exp_lines,
-      map(nitpick.correct_spacing, src_lines)
+      [nitpick.correct_spacing(line) for line in src_lines]
     )
 
   def test_spacing_semicolon_and_comma(self):
@@ -410,10 +410,9 @@ class IncludeSorterTest(unittest.TestCase):
     ]
     self.assertListEqual(
       exp_lines,
-      map(nitpick.correct_spacing, src_lines)
+      [nitpick.correct_spacing(line) for line in src_lines]
     )
 
- 
   def test_curly_brace_spacing_fixer(self):
     """Test that curly braces are spaced correctly"""
     src_lines = [
@@ -426,7 +425,7 @@ class IncludeSorterTest(unittest.TestCase):
     ]
     self.assertListEqual(
       exp_lines,
-      map(nitpick.correct_spacing, src_lines)
+      [nitpick.correct_spacing(line) for line in src_lines]
     )
 
   def test_spacing_with_assignment_and_gt_lt(self):
@@ -439,7 +438,7 @@ class IncludeSorterTest(unittest.TestCase):
     ]
     self.assertListEqual(
       exp_lines,
-      map(nitpick.correct_spacing, src_lines)
+      [nitpick.correct_spacing(line) for line in src_lines]
     )
 
   def test_spacing_with_some_common_two_char_operators(self):
@@ -456,7 +455,7 @@ class IncludeSorterTest(unittest.TestCase):
     ]
     self.assertListEqual(
       exp_lines,
-      map(nitpick.correct_spacing, src_lines)
+      [nitpick.correct_spacing(line) for line in src_lines]
     )
 
   def test_spacing_near_if_for_while_switch(self):
@@ -469,7 +468,7 @@ class IncludeSorterTest(unittest.TestCase):
     ]
     self.assertListEqual(
       exp_lines,
-      map(nitpick.correct_spacing, src_lines)
+      [nitpick.correct_spacing(line) for line in src_lines]
     )
 
   def test_spacing_around_single_line_comments(self):
@@ -490,9 +489,8 @@ class IncludeSorterTest(unittest.TestCase):
     ]
     self.assertListEqual(
       exp_lines,
-      map(nitpick.correct_spacing, src_lines)
+      [nitpick.correct_spacing(line) for line in src_lines]
     )
-
 
 if __name__ == '__main__':
   unittest.main()
