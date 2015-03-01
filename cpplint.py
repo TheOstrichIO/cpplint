@@ -3647,7 +3647,7 @@ def IsRValueType(typenames, clean_lines, nesting_state, linenum, column):
       if (implicit_constructor and
           implicit_constructor.group(1) == implicit_constructor.group(2)):
         return True
-      return IsRValueType(clean_lines, nesting_state, linenum,
+      return IsRValueType(typenames, clean_lines, nesting_state, linenum,
                           len(match_func.group(1)))
 
     # Nothing before the function name.  If this is inside a block scope,
