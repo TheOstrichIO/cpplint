@@ -324,10 +324,10 @@ def main():
   style_parser.add_argument('--quiet', action='store_true',
                             help=u'Don\'t print progress '
                             '(only warnings and errors)')
-  modules_help_str = u'\n'.join([u'%s: %s' % (mod, desc) for mod, desc in
-                                 _STYLE_MODULES_DICT.iteritems()])
   style_parser.add_argument('-m', '--modules', action='append', metavar='MOD',
-                            help=modules_help_str)
+                            help=(u'Enabled style modules (choose from {%s}, '
+                                  'or default to all modules)' %
+                                  (u','.join(_STYLE_MODULES_DICT.keys()))))
   style_parser.add_argument('--filename',
                             help=u'When reading source code from STDIN, speci'
                             'fy the filename of the processed source code')
