@@ -495,5 +495,22 @@ class WhiteSpaceFixerTest(unittest.TestCase):
       [nitpick.correct_spacing(line) for line in src_lines]
     )
 
+  def test_no_space_around_factors(self):
+    """Test that multiple allowed styles are left unchanged."""
+    src_lines = [
+      u'v = w * x + y / z;  // Binary operators usually have spaces around',
+      u'v = w*x + y/z;      // it\'s okay to remove spaces around factors.',
+      u'v = w * (x + z);    // Parentheses should have no spaces inside them.',
+    ]
+    exp_lines = [
+      u'v = w * x + y / z;  // Binary operators usually have spaces around',
+      u'v = w*x + y/z;      // it\'s okay to remove spaces around factors.',
+      u'v = w * (x + z);    // Parentheses should have no spaces inside them.',
+    ]
+    self.assertListEqual(
+      exp_lines,
+      [nitpick.correct_spacing(line) for line in src_lines]
+    )
+
 if __name__ == '__main__':
   unittest.main()
