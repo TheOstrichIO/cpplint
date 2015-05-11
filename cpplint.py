@@ -396,6 +396,12 @@ _CPP_HEADERS = frozenset([
     'cuchar',
     'cwchar',
     'cwctype',
+    # Extra C++11 headers that we approve
+    'atomic',
+    'condition_variable',
+    'future',
+    'mutex',
+    'thread',
     ])
 
 
