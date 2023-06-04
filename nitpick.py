@@ -140,11 +140,11 @@ def sort_includes(filename, lines):
       if hkey in includes:
         # Include repeats in batch
         if repr(hfile) == repr(includes[hkey]):
-          # Occurences are consistent - just a warning then
+          # Occurrences are consistent - just a warning then
           warn(u'"%s" included more than once (consistently) in "%s:%d": %s',
                hfile.name, filename, lnum+1, hfile)
         else:
-          # Occurences inconsistent! it's an error.
+          # Occurrences inconsistent! it's an error.
           err(u'"%s" included more than once (inconsistently) in "%s:%d": %s',
               hfile.name, filename, lnum+1, hfile)
       else:
